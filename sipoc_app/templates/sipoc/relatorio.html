@@ -12,7 +12,7 @@
 <div class="card p-4 p-md-5">
   <div class="relatorio-header d-flex justify-content-between align-items-end">
     <div>
-      <div class="text-uppercase small text-muted" style="letter-spacing: 1px;">Relatório de Processo · SIPOC</div>
+      <div class="text-uppercase small text-muted" style="letter-spacing: 1px;">Relatório de Macro Processo · SIPOC</div>
       <h2 class="mb-0">{{ sipoc.nome_processo }}</h2>
       <div class="relatorio-meta mt-1">
         {{ sipoc.empresa.nome }}{% if sipoc.area %} · {{ sipoc.area.nome }}{% endif %}
@@ -25,7 +25,7 @@
 
   {% if sipoc.objetivo %}
   <div class="mb-4">
-    <div class="text-uppercase small text-muted fw-semibold mb-1">Objetivo do processo</div>
+    <div class="text-uppercase small text-muted fw-semibold mb-1">Objetivo do Macro Processo</div>
     <p class="mb-0">{{ sipoc.objetivo }}</p>
   </div>
   {% endif %}
@@ -35,7 +35,7 @@
     <div class="col">
       <div class="kpi-card text-center">
         <div class="kpi-value" style="font-size:1.5rem">{{ sipoc.total_etapas }}</div>
-        <div class="kpi-label">Etapas</div>
+        <div class="kpi-label">Processos</div>
       </div>
     </div>
     <div class="col">
@@ -64,7 +64,7 @@
     </div>
   </div>
 
-  <div class="text-uppercase small text-muted fw-semibold mb-2">Detalhamento por etapa</div>
+  <div class="text-uppercase small text-muted fw-semibold mb-2">Detalhamento por processo</div>
   <div class="table-responsive mb-4">
     <table class="table table-bordered sipoc-table align-middle">
       <thead>
@@ -104,7 +104,7 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="5" class="text-center text-muted py-4">Nenhuma etapa cadastrada.</td></tr>
+        <tr><td colspan="5" class="text-center text-muted py-4">Nenhum processo cadastrado.</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -112,7 +112,7 @@
 
   {% if sipoc.etapas %}
   <div class="mb-4">
-    <div class="text-uppercase small text-muted fw-semibold mb-2">Fluxo do processo</div>
+    <div class="text-uppercase small text-muted fw-semibold mb-2">Fluxo dos processos</div>
     <div class="d-flex flex-wrap align-items-center gap-2">
       {% for etapa in sipoc.etapas %}
         <span class="badge bg-light text-dark border px-3 py-2">{{ loop.index }}. {{ etapa.nome }}</span>

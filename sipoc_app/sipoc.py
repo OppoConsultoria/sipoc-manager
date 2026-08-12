@@ -85,7 +85,7 @@ def novo():
         area_id = request.form.get("area_id", type=int) or None
 
         if not nome_processo or not empresa_id:
-            flash("Informe o nome do processo e a empresa.", "danger")
+            flash("Informe o nome do macro processo e a empresa.", "danger")
         else:
             sipoc = Sipoc(
                 nome_processo=nome_processo,
@@ -96,7 +96,7 @@ def novo():
             )
             _salvar_etapas(sipoc, request.form)
             if not sipoc.etapas:
-                flash("Adicione ao menos uma etapa do processo.", "danger")
+                flash("Adicione ao menos um processo.", "danger")
                 return render_template(
                     "sipoc/form.html", sipoc=None, empresas=empresas, empresa_id_pre=empresa_id_pre
                 )
@@ -129,7 +129,7 @@ def editar(sipoc_id):
         area_id = request.form.get("area_id", type=int) or None
 
         if not nome_processo or not empresa_id:
-            flash("Informe o nome do processo e a empresa.", "danger")
+            flash("Informe o nome do macro processo e a empresa.", "danger")
         else:
             sipoc.nome_processo = nome_processo
             sipoc.objetivo = request.form.get("objetivo", "").strip()

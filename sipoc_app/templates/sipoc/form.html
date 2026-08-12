@@ -12,7 +12,7 @@
 {% endblock %}
 {% block content %}
 <h2 class="mb-1">{{ 'Editar SIPOC' if sipoc else 'Novo SIPOC' }}</h2>
-<p class="text-muted">Cada etapa do processo tem seus próprios fornecedores, entradas, saídas e clientes — assim fica claro o que pertence a cada etapa.</p>
+<p class="text-muted">Cada processo tem seus próprios fornecedores, entradas, saídas e clientes — assim fica claro o que pertence a cada processo.</p>
 
 <form method="POST" id="sipocForm">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -20,7 +20,7 @@
   <div class="card p-4 mb-4">
     <div class="row g-3">
       <div class="col-md-6">
-        <label class="form-label">Nome do processo *</label>
+        <label class="form-label">Nome do Macro Processo *</label>
         <input type="text" name="nome_processo" class="form-control" required
                placeholder='Ex.: "Mapeamento Gestão Financeira"'
                value="{{ sipoc.nome_processo if sipoc else '' }}">
@@ -44,21 +44,21 @@
         </select>
       </div>
       <div class="col-12">
-        <label class="form-label">Objetivo do processo</label>
-        <textarea name="objetivo" class="form-control" rows="2" placeholder="O que este processo entrega e por quê?">{{ sipoc.objetivo if sipoc else '' }}</textarea>
+        <label class="form-label">Objetivo do Macro Processo</label>
+        <textarea name="objetivo" class="form-control" rows="2" placeholder="O que este macro processo entrega e por quê?">{{ sipoc.objetivo if sipoc else '' }}</textarea>
       </div>
     </div>
   </div>
 
   <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0">Etapas do processo</h5>
-    <button type="button" id="addEtapaBtn" class="btn btn-sm btn-navy"><i class="bi bi-plus-lg"></i> Adicionar etapa</button>
+    <h5 class="mb-0">Processos</h5>
+    <button type="button" id="addEtapaBtn" class="btn btn-sm btn-navy"><i class="bi bi-plus-lg"></i> Adicionar Processo</button>
   </div>
 
   <div id="etapasContainer"></div>
 
   <div id="etapasEmptyHint" class="etapa-empty-hint mb-4" style="display: none;">
-    Nenhuma etapa adicionada ainda. Clique em "Adicionar etapa" para começar — cada etapa pode ter seus próprios fornecedores, entradas, saídas e clientes.
+    Nenhum processo adicionado ainda. Clique em "Adicionar Processo" para começar — cada processo pode ter seus próprios fornecedores, entradas, saídas e clientes.
   </div>
 
   <div class="mt-4">
@@ -112,12 +112,12 @@
     return `
       <div class="card etapa-card mb-3" data-etapa-key="${key}">
         <div class="card-header d-flex align-items-center gap-2">
-          <span class="text-muted small">Etapa</span>
+          <span class="text-muted small">Processo</span>
           <input type="text" name="etapa_nome[]" class="form-control form-control-sm" style="max-width: 360px;"
-                 placeholder="Nome da etapa (ex.: Contas a Pagar)" value="${escapeHtml(nome)}" required>
+                 placeholder="Nome do processo (ex.: Contas a Pagar)" value="${escapeHtml(nome)}" required>
           <input type="hidden" name="etapa_key[]" value="${key}">
-          <button type="button" class="btn btn-sm btn-outline-danger ms-auto remove-etapa" title="Remover etapa">
-            <i class="bi bi-trash"></i> Remover etapa
+          <button type="button" class="btn btn-sm btn-outline-danger ms-auto remove-etapa" title="Remover Processo">
+            <i class="bi bi-trash"></i> Remover Processo
           </button>
         </div>
         <div class="card-body">
@@ -177,7 +177,7 @@
     }
     const removeEtapaBtn = e.target.closest('.remove-etapa');
     if (removeEtapaBtn) {
-      if (document.querySelectorAll('.etapa-card').length <= 1 || confirm('Remover esta etapa e todos os itens associados a ela?')) {
+      if (document.querySelectorAll('.etapa-card').length <= 1 || confirm('Remover este processo e todos os itens associados a ele?')) {
         removeEtapaBtn.closest('.etapa-card').remove();
         updateEmptyHint();
       }
@@ -213,7 +213,7 @@
   document.getElementById('sipocForm').addEventListener('submit', (e) => {
     if (document.querySelectorAll('.etapa-card').length === 0) {
       e.preventDefault();
-      alert('Adicione ao menos uma etapa do processo antes de salvar.');
+      alert('Adicione ao menos um processo antes de salvar.');
     }
   });
 </script>

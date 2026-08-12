@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if area else 'Nova' }} área — SIPOC Manager{% endblock %}
+{% block content %}
+<h2 class="mb-1">{{ 'Editar área' if area else 'Nova área' }}</h2>
+<p class="text-muted">Empresa: {{ empresa.nome }}</p>
+<div class="card p-4" style="max-width: 500px;">
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3">
+      <label class="form-label">Nome da área *</label>
+      <input type="text" name="nome" class="form-control" required value="{{ area.nome if area else '' }}">
+    </div>
+    <button type="submit" class="btn btn-navy">Salvar</button>
+    <a href="{{ url_for('empresas.visualizar', empresa_id=empresa.id) }}" class="btn btn-link">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ sipoc.nome_processo }} — SIPOC Manager{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h2 class="mb-0">{{ sipoc.nome_processo }}</h2>
+    <p class="text-muted mb-0">
+      <a href="{{ url_for('empresas.visualizar', empresa_id=sipoc.empresa_id) }}">{{ sipoc.empresa.nome }}</a>
+      {% if sipoc.area %} · {{ sipoc.area.nome }}{% endif %}
+    </p>
+  </div>
+  <div class="text-end">
+    <a href="{{ url_for('sipoc.relatorio', sipoc_id=sipoc.id) }}" class="btn btn-navy btn-sm"><i class="bi bi-file-earmark-text"></i> Relatório</a>
+    <a href="{{ url_for('sipoc.editar', sipoc_id=sipoc.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Editar</a>
+    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delSipoc"><i class="bi bi-trash"></i></button>
+  </div>
+</div>
+
+{% if sipoc.objetivo %}
+<div class="card p-3 mb-3"><small class="text-muted"><strong>Objetivo:</strong> {{ sipoc.objetivo }}</small></div>
+{% endif %}
+
+<div class="table-responsive">
+  <table class="table table-bordered sipoc-table">
+    <thead>
+      <tr>
+        <th>SUPPLIERS</th>
+        <th>INPUTS</th>
+        <th>PROCESS</th>
+        <th>OUTPUTS</th>
+        <th>CUSTOMERS</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        {% for cat, cls in [('supplier','sipoc-col-supplier'), ('input','sipoc-col-input'), ('process','sipoc-col-process'), ('output','sipoc-col-output'), ('customer','sipoc-col-customer')] %}
+        <td class="{{ cls }}">
+          <ul class="mb-0 ps-3">
+            {% for item in sipoc.itens_por_categoria(cat) %}
+              <li>{{ item.texto }}</li>
+            {% else %}
+              <li class="text-muted">—</li>
+            {% endfor %}
+          </ul>
+        </td>
+        {% endfor %}
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p class="text-muted small">
+  Criado por {{ sipoc.created_by.name if sipoc.created_by else '—' }} em {{ sipoc.created_at.strftime('%d/%m/%Y') }} ·
+  Última atualização em {{ sipoc.updated_at.strftime('%d/%m/%Y %H:%M') }}
+</p>
+
+<div class="modal fade" id="delSipoc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Excluir SIPOC</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">Tem certeza que deseja excluir o SIPOC <strong>{{ sipoc.nome_processo }}</strong>? Esta ação não pode ser desfeita.</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form action="{{ url_for('sipoc.excluir', sipoc_id=sipoc.id) }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-danger">Excluir definitivamente</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

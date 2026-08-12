@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if empresa else 'Nova' }} empresa — SIPOC Manager{% endblock %}
+{% block content %}
+<h2 class="mb-4">{{ 'Editar empresa' if empresa else 'Nova empresa' }}</h2>
+<div class="card p-4" style="max-width: 640px;">
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3">
+      <label class="form-label">Nome da empresa *</label>
+      <input type="text" name="nome" class="form-control" required value="{{ empresa.nome if empresa else '' }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">CNPJ</label>
+      <input type="text" name="cnpj" class="form-control" value="{{ empresa.cnpj if empresa else '' }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Setor</label>
+      <input type="text" name="setor" class="form-control" value="{{ empresa.setor if empresa else '' }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Observações</label>
+      <textarea name="observacoes" class="form-control" rows="3">{{ empresa.observacoes if empresa else '' }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-navy">Salvar</button>
+    <a href="{{ url_for('empresas.listar') }}" class="btn btn-link">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

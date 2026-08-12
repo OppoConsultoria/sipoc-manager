@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Relatório — {{ sipoc.nome_processo }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3 no-print">
+  <a href="{{ url_for('sipoc.visualizar', sipoc_id=sipoc.id) }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i> Voltar
+  </a>
+  <button onclick="window.print()" class="btn btn-navy btn-sm"><i class="bi bi-printer"></i> Imprimir / Salvar PDF</button>
+</div>
+
+<div class="card p-4 p-md-5">
+  <div class="relatorio-header d-flex justify-content-between align-items-end">
+    <div>
+      <div class="text-uppercase small text-muted" style="letter-spacing: 1px;">Relatório de Processo · SIPOC</div>
+      <h2 class="mb-0">{{ sipoc.nome_processo }}</h2>
+      <div class="relatorio-meta mt-1">
+        {{ sipoc.empresa.nome }}{% if sipoc.area %} · {{ sipoc.area.nome }}{% endif %}
+      </div>
+    </div>
+    <div class="text-end relatorio-meta">
+      Gerado em {{ now.strftime('%d/%m/%Y às %H:%M') }}
+    </div>
+  </div>
+
+  {% if sipoc.objetivo %}
+  <div class="mb-4">
+    <div class="text-uppercase small text-muted fw-semibold mb-1">Objetivo do processo</div>
+    <p class="mb-0">{{ sipoc.objetivo }}</p>
+  </div>
+  {% endif %}
+
+  <div class="row g-3 mb-4">
+    {% set contagem = sipoc.contagem %}
+    <div class="col">
+      <div class="kpi-card text-center">
+        <div class="kpi-value" style="font-size:1.5rem">{{ contagem.supplier }}</div>
+        <div class="kpi-label">Fornecedores</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="kpi-card text-center">
+        <div class="kpi-value" style="font-size:1.5rem">{{ contagem.input }}</div>
+        <div class="kpi-label">Entradas</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="kpi-card text-center">
+        <div class="kpi-value" style="font-size:1.5rem">{{ contagem.process }}</div>
+        <div class="kpi-label">Etapas</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="kpi-card text-center">
+        <div class="kpi-value" style="font-size:1.5rem">{{ contagem.output }}</div>
+        <div class="kpi-label">Saídas</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="kpi-card text-center">
+        <div class="kpi-value" style="font-size:1.5rem">{{ contagem.customer }}</div>
+        <div class="kpi-label">Clientes</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive mb-4">
+    <table class="table table-bordered sipoc-table">
+      <thead>
+        <tr>
+          <th>SUPPLIERS</th>
+          <th>INPUTS</th>
+          <th>PROCESS</th>
+          <th>OUTPUTS</th>
+          <th>CUSTOMERS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          {% for cat, cls in [('supplier','sipoc-col-supplier'), ('input','sipoc-col-input'), ('process','sipoc-col-process'), ('output','sipoc-col-output'), ('customer','sipoc-col-customer')] %}
+          <td class="{{ cls }}">
+            <ul class="mb-0 ps-3">
+              {% for item in sipoc.itens_por_categoria(cat) %}
+                <li>{{ item.texto }}</li>
+              {% else %}
+                <li class="text-muted">—</li>
+              {% endfor %}
+            </ul>
+          </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  {% set etapas = sipoc.itens_por_categoria('process') %}
+  {% if etapas %}
+  <div class="mb-4">
+    <div class="text-uppercase small text-muted fw-semibold mb-2">Fluxo do processo</div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      {% for etapa in etapas %}
+        <span class="badge bg-light text-dark border px-3 py-2">{{ loop.index }}. {{ etapa.texto }}</span>
+        {% if not loop.last %}<i class="bi bi-arrow-right text-muted"></i>{% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <hr>
+  <div class="relatorio-meta d-flex justify-content-between">
+    <span>Criado por {{ sipoc.created_by.name if sipoc.created_by else '—' }} em {{ sipoc.created_at.strftime('%d/%m/%Y') }}</span>
+    <span>Última atualização em {{ sipoc.updated_at.strftime('%d/%m/%Y às %H:%M') }}</span>
+  </div>
+</div>
+{% endblock %}

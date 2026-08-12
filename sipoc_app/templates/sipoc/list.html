@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}SIPOCs — SIPOC Manager{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0">SIPOCs cadastrados</h2>
+  <a href="{{ url_for('sipoc.novo') }}" class="btn btn-navy"><i class="bi bi-plus-lg"></i> Novo SIPOC</a>
+</div>
+
+<form class="row g-2 mb-3" method="GET">
+  <div class="col-md-4">
+    <input type="text" name="q" class="form-control" placeholder="Buscar processo..." value="{{ busca }}">
+  </div>
+  <div class="col-md-3">
+    <select name="empresa_id" class="form-select" onchange="this.form.submit()">
+      <option value="">Todas as empresas</option>
+      {% for e in empresas %}
+      <option value="{{ e.id }}" {% if empresa_id == e.id %}selected{% endif %}>{{ e.nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% if empresa_id %}
+  <div class="col-md-3">
+    <select name="area_id" class="form-select" onchange="this.form.submit()">
+      <option value="">Todas as áreas</option>
+      {% for a in areas %}
+      <option value="{{ a.id }}" {% if area_id == a.id %}selected{% endif %}>{{ a.nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+  <div class="col-md-2">
+    <button class="btn btn-outline-secondary w-100" type="submit"><i class="bi bi-search"></i> Filtrar</button>
+  </div>
+</form>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Processo</th>
+          <th>Empresa</th>
+          <th>Área</th>
+          <th class="text-center">Itens</th>
+          <th>Atualizado em</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sipocs %}
+        <tr>
+          <td><a href="{{ url_for('sipoc.visualizar', sipoc_id=s.id) }}" class="fw-semibold text-decoration-none">{{ s.nome_processo }}</a></td>
+          <td>{{ s.empresa.nome }}</td>
+          <td class="text-muted">{{ s.area.nome if s.area else '—' }}</td>
+          <td class="text-center"><span class="badge bg-light text-dark border">{{ s.total_itens }}</span></td>
+          <td class="text-muted small">{{ s.updated_at.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td class="text-end">
+            <a href="{{ url_for('sipoc.visualizar', sipoc_id=s.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+            <a href="{{ url_for('sipoc.relatorio', sipoc_id=s.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-text"></i></a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-4">Nenhum SIPOC encontrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

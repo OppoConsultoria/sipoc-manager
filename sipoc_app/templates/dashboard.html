@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — SIPOC Manager{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="mb-0">Dashboard</h2>
+    <p class="text-muted mb-0">Visão geral dos processos mapeados</p>
+  </div>
+  <a href="{{ url_for('sipoc.novo') }}" class="btn btn-navy"><i class="bi bi-plus-lg"></i> Novo SIPOC</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-label">Empresas</div>
+      <div class="kpi-value">{{ total_empresas }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-label">Áreas</div>
+      <div class="kpi-value">{{ total_areas }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-label">SIPOCs cadastrados</div>
+      <div class="kpi-value">{{ total_sipocs }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-label">Média de etapas / SIPOC</div>
+      <div class="kpi-value">{{ media_etapas }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card p-3 h-100">
+      <h6 class="mb-3">SIPOCs por empresa</h6>
+      {% if sipocs_por_empresa %}
+        <canvas id="chartEmpresas" height="220"></canvas>
+      {% else %}
+        <p class="text-muted mb-0">Nenhum SIPOC cadastrado ainda.</p>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card p-3 h-100">
+      <h6 class="mb-3">Últimos SIPOCs atualizados</h6>
+      {% if ultimos_sipocs %}
+        <ul class="list-group list-group-flush">
+          {% for s in ultimos_sipocs %}
+          <li class="list-group-item d-flex justify-content-between align-items-start px-0">
+            <div>
+              <a href="{{ url_for('sipoc.visualizar', sipoc_id=s.id) }}" class="fw-semibold text-decoration-none">{{ s.nome_processo }}</a>
+              <div class="small text-muted">{{ s.empresa.nome }}{% if s.area %} · {{ s.area.nome }}{% endif %}</div>
+            </div>
+            <span class="badge badge-navy align-self-center">{{ s.updated_at.strftime('%d/%m/%Y') }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted mb-0">Nenhum SIPOC cadastrado ainda.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if empresas_sem_sipoc %}
+<div class="card p-3 mt-3">
+  <h6 class="mb-2"><i class="bi bi-exclamation-circle text-warning"></i> Empresas sem SIPOC cadastrado</h6>
+  <div>
+    {% for e in empresas_sem_sipoc %}
+      <a href="{{ url_for('empresas.visualizar', empresa_id=e.id) }}" class="badge bg-light text-dark border me-1 mb-1 text-decoration-none">{{ e.nome }}</a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+  const dados = {{ sipocs_por_empresa | tojson }};
+  const ctx = document.getElementById('chartEmpresas');
+  if (ctx && dados.length) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: dados.map(d => d.nome),
+        datasets: [{
+          label: 'SIPOCs',
+          data: dados.map(d => d.total),
+          backgroundColor: '#1f4e78',
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+      }
+    });
+  }
+</script>
+{% endblock %}

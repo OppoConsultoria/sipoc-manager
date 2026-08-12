@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ empresa.nome }} — SIPOC Manager{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+  <div>
+    <h2 class="mb-0">{{ empresa.nome }}</h2>
+    <p class="text-muted mb-0">{{ empresa.setor or 'Setor não informado' }}{% if empresa.cnpj %} · CNPJ {{ empresa.cnpj }}{% endif %}</p>
+  </div>
+  <div class="text-end">
+    <a href="{{ url_for('empresas.editar', empresa_id=empresa.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Editar</a>
+    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delEmpresa"><i class="bi bi-trash"></i> Excluir</button>
+  </div>
+</div>
+
+{% if empresa.observacoes %}
+<div class="card p-3 mb-4"><small class="text-muted">{{ empresa.observacoes }}</small></div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4">
+    <div class="kpi-card"><div class="kpi-label">Áreas</div><div class="kpi-value">{{ empresa.areas | length }}</div></div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="kpi-card"><div class="kpi-label">SIPOCs</div><div class="kpi-value">{{ empresa.total_sipocs }}</div></div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Áreas</h5>
+      <a href="{{ url_for('areas.novo', empresa_id=empresa.id) }}" class="btn btn-sm btn-navy"><i class="bi bi-plus"></i> Área</a>
+    </div>
+    <div class="card">
+      <ul class="list-group list-group-flush">
+        {% for a in empresa.areas %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            {{ a.nome }}
+            <span class="badge bg-light text-dark border ms-1">{{ a.total_sipocs }} SIPOC(s)</span>
+          </div>
+          <div>
+            <a href="{{ url_for('areas.editar', area_id=a.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+            <form action="{{ url_for('areas.excluir', area_id=a.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Excluir esta área e os SIPOCs vinculados a ela permanecerão, apenas desvinculados. Confirmar?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </form>
+          </div>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted small">Nenhuma área cadastrada.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">SIPOCs de {{ empresa.nome }}</h5>
+      <a href="{{ url_for('sipoc.novo', empresa_id=empresa.id) }}" class="btn btn-sm btn-navy"><i class="bi bi-plus"></i> SIPOC</a>
+    </div>
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Processo</th>
+              <th>Área</th>
+              <th>Atualizado em</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in empresa.sipocs %}
+            <tr>
+              <td><a href="{{ url_for('sipoc.visualizar', sipoc_id=s.id) }}" class="text-decoration-none fw-semibold">{{ s.nome_processo }}</a></td>
+              <td class="text-muted">{{ s.area.nome if s.area else '—' }}</td>
+              <td class="text-muted small">{{ s.updated_at.strftime('%d/%m/%Y %H:%M') }}</td>
+              <td class="text-end">
+                <a href="{{ url_for('sipoc.relatorio', sipoc_id=s.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-text"></i></a>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center text-muted py-4">Nenhum SIPOC cadastrado para esta empresa.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="delEmpresa" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Excluir empresa</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Tem certeza que deseja excluir <strong>{{ empresa.nome }}</strong>? Todas as áreas e SIPOCs vinculados também serão excluídos. Esta ação não pode ser desfeita.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form action="{{ url_for('empresas.excluir', empresa_id=empresa.id) }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-danger">Excluir definitivamente</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

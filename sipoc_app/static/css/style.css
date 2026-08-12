@@ -1,0 +1,130 @@
+:root {
+  --navy: #1f4e78;
+  --navy-dark: #163a58;
+  --gold: #d9a441;
+  --bg: #f4f6f9;
+  --card-border: #e3e7ee;
+}
+
+body {
+  background-color: var(--bg);
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #24303d;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.navbar-sipoc {
+  background: linear-gradient(90deg, var(--navy) 0%, var(--navy-dark) 100%);
+}
+
+.navbar-sipoc .nav-link {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.navbar-sipoc .nav-link.active,
+.navbar-sipoc .nav-link:hover {
+  color: #fff !important;
+}
+
+.card {
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+}
+
+.kpi-card {
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: #fff;
+  padding: 1.25rem 1.5rem;
+  height: 100%;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.kpi-label {
+  color: #6b7686;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.sipoc-table th {
+  background-color: var(--navy);
+  color: #fff;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 0.85rem;
+  letter-spacing: 0.3px;
+}
+
+.sipoc-table td {
+  vertical-align: top;
+  font-size: 0.9rem;
+}
+
+.sipoc-col-supplier { background-color: #eef3f8; }
+.sipoc-col-input { background-color: #eaf3ee; }
+.sipoc-col-process { background-color: #fdf3e3; }
+.sipoc-col-output { background-color: #eaf3ee; }
+.sipoc-col-customer { background-color: #eef3f8; }
+
+.badge-navy {
+  background-color: var(--navy);
+  color: #fff;
+}
+
+.btn-navy {
+  background-color: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+
+.btn-navy:hover {
+  background-color: var(--navy-dark);
+  border-color: var(--navy-dark);
+  color: #fff;
+}
+
+.dynamic-row-group .row-item {
+  margin-bottom: 0.5rem;
+}
+
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
+}
+
+.auth-card {
+  max-width: 420px;
+  width: 100%;
+  border-radius: 14px;
+}
+
+/* --- Relatório --- */
+.relatorio-header {
+  border-bottom: 3px solid var(--navy);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.relatorio-meta {
+  color: #6b7686;
+  font-size: 0.9rem;
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+  .container { max-width: 100% !important; }
+}

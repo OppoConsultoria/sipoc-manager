@@ -2,24 +2,41 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 
 from sipoc_app.extensions import db
-from sipoc_app.models import Sipoc, SipocItem, Empresa, Area, CATEGORIAS
+from sipoc_app.models import Sipoc, SipocEtapa, SipocEtapaItem, Empresa, Area, ITEM_CATEGORIAS
 
 sipoc_bp = Blueprint("sipoc", __name__, url_prefix="/sipoc")
 
 
-def _salvar_itens(sipoc, form):
-    """Substitui os itens do SIPOC pelos enviados no formulário."""
-    sipoc.itens.clear()
-    for categoria in CATEGORIAS:
-        valores = form.getlist(f"{categoria}[]")
-        ordem = 0
-        for valor in valores:
-            texto = valor.strip()
-            if texto:
-                ordem += 1
-                sipoc.itens.append(
-                    SipocItem(categoria=categoria, texto=texto, ordem=ordem)
-                )
+def _salvar_etapas(sipoc, form):
+    """Substitui as etapas do SIPOC (e seus itens) pelas enviadas no formulário.
+
+    Cada etapa é identificada por uma chave única (etapa_key[]) gerada no
+    cliente, usada para agrupar os campos etapa_item__<key>__<categoria>[]
+    daquela etapa especificamente.
+    """
+    sipoc.etapas.clear()
+
+    nomes = form.getlist("etapa_nome[]")
+    chaves = form.getlist("etapa_key[]")
+
+    ordem = 0
+    for nome, chave in zip(nomes, chaves):
+        nome = nome.strip()
+        if not nome:
+            continue
+        ordem += 1
+        etapa = SipocEtapa(nome=nome, ordem=ordem)
+        for categoria in ITEM_CATEGORIAS:
+            valores = form.getlist(f"etapa_item__{chave}__{categoria}[]")
+            item_ordem = 0
+            for valor in valores:
+                texto = valor.strip()
+                if texto:
+                    item_ordem += 1
+                    etapa.itens.append(
+                        SipocEtapaItem(categoria=categoria, texto=texto, ordem=item_ordem)
+                    )
+        sipoc.etapas.append(etapa)
 
 
 @sipoc_bp.route("/")
@@ -77,7 +94,12 @@ def novo():
                 area_id=area_id,
                 created_by_id=current_user.id,
             )
-            _salvar_itens(sipoc, request.form)
+            _salvar_etapas(sipoc, request.form)
+            if not sipoc.etapas:
+                flash("Adicione ao menos uma etapa do processo.", "danger")
+                return render_template(
+                    "sipoc/form.html", sipoc=None, empresas=empresas, empresa_id_pre=empresa_id_pre
+                )
             db.session.add(sipoc)
             db.session.commit()
             flash("SIPOC criado com sucesso.", "success")
@@ -113,7 +135,7 @@ def editar(sipoc_id):
             sipoc.objetivo = request.form.get("objetivo", "").strip()
             sipoc.empresa_id = empresa_id
             sipoc.area_id = area_id
-            _salvar_itens(sipoc, request.form)
+            _salvar_etapas(sipoc, request.form)
             db.session.commit()
             flash("SIPOC atualizado.", "success")
             return redirect(url_for("sipoc.visualizar", sipoc_id=sipoc.id))

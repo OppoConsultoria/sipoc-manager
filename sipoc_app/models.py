@@ -4,11 +4,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from sipoc_app.extensions import db, login_manager
 
-CATEGORIAS = ("supplier", "input", "process", "output", "customer")
-CATEGORIA_LABEL = {
+# Categorias de item associadas a cada etapa do processo
+ITEM_CATEGORIAS = ("supplier", "input", "output", "customer")
+ITEM_CATEGORIA_LABEL = {
     "supplier": "Fornecedor",
     "input": "Entrada",
-    "process": "Etapa do Processo",
     "output": "Saída",
     "customer": "Cliente",
 }
@@ -80,28 +80,54 @@ class Sipoc(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     created_by = db.relationship("User")
-    itens = db.relationship(
-        "SipocItem",
+    etapas = db.relationship(
+        "SipocEtapa",
         backref="sipoc",
         cascade="all, delete-orphan",
-        order_by="SipocItem.ordem",
+        order_by="SipocEtapa.ordem",
+    )
+
+    @property
+    def total_etapas(self):
+        return len(self.etapas)
+
+    @property
+    def contagem(self):
+        """Totais agregados de cada categoria, somando todas as etapas."""
+        totais = {c: 0 for c in ITEM_CATEGORIAS}
+        for etapa in self.etapas:
+            for cat in ITEM_CATEGORIAS:
+                totais[cat] += len(etapa.itens_por_categoria(cat))
+        return totais
+
+    @property
+    def total_itens(self):
+        return sum(self.contagem.values())
+
+
+class SipocEtapa(db.Model):
+    """Uma etapa do processo (coluna PROCESS), com seus próprios
+    fornecedores, entradas, saídas e clientes associados."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    sipoc_id = db.Column(db.Integer, db.ForeignKey("sipoc.id"), nullable=False)
+    nome = db.Column(db.String(255), nullable=False)
+    ordem = db.Column(db.Integer, default=0)
+
+    itens = db.relationship(
+        "SipocEtapaItem",
+        backref="etapa",
+        cascade="all, delete-orphan",
+        order_by="SipocEtapaItem.ordem",
     )
 
     def itens_por_categoria(self, categoria):
         return [i for i in self.itens if i.categoria == categoria]
 
-    @property
-    def contagem(self):
-        return {c: len(self.itens_por_categoria(c)) for c in CATEGORIAS}
 
-    @property
-    def total_itens(self):
-        return len(self.itens)
-
-
-class SipocItem(db.Model):
+class SipocEtapaItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    sipoc_id = db.Column(db.Integer, db.ForeignKey("sipoc.id"), nullable=False)
-    categoria = db.Column(db.String(20), nullable=False)
+    etapa_id = db.Column(db.Integer, db.ForeignKey("sipoc_etapa.id"), nullable=False)
+    categoria = db.Column(db.String(20), nullable=False)  # supplier, input, output, customer
     texto = db.Column(db.String(500), nullable=False)
     ordem = db.Column(db.Integer, default=0)

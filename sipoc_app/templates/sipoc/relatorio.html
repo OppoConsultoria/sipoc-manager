@@ -34,6 +34,12 @@
     {% set contagem = sipoc.contagem %}
     <div class="col">
       <div class="kpi-card text-center">
+        <div class="kpi-value" style="font-size:1.5rem">{{ sipoc.total_etapas }}</div>
+        <div class="kpi-label">Etapas</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="kpi-card text-center">
         <div class="kpi-value" style="font-size:1.5rem">{{ contagem.supplier }}</div>
         <div class="kpi-label">Fornecedores</div>
       </div>
@@ -42,12 +48,6 @@
       <div class="kpi-card text-center">
         <div class="kpi-value" style="font-size:1.5rem">{{ contagem.input }}</div>
         <div class="kpi-label">Entradas</div>
-      </div>
-    </div>
-    <div class="col">
-      <div class="kpi-card text-center">
-        <div class="kpi-value" style="font-size:1.5rem">{{ contagem.process }}</div>
-        <div class="kpi-label">Etapas</div>
       </div>
     </div>
     <div class="col">
@@ -64,42 +64,58 @@
     </div>
   </div>
 
+  <div class="text-uppercase small text-muted fw-semibold mb-2">Detalhamento por etapa</div>
   <div class="table-responsive mb-4">
-    <table class="table table-bordered sipoc-table">
+    <table class="table table-bordered sipoc-table align-middle">
       <thead>
         <tr>
-          <th>SUPPLIERS</th>
-          <th>INPUTS</th>
-          <th>PROCESS</th>
-          <th>OUTPUTS</th>
-          <th>CUSTOMERS</th>
+          <th style="width: 20%">SUPPLIERS</th>
+          <th style="width: 20%">INPUTS</th>
+          <th style="width: 20%">PROCESS</th>
+          <th style="width: 20%">OUTPUTS</th>
+          <th style="width: 20%">CUSTOMERS</th>
         </tr>
       </thead>
       <tbody>
+        {% for etapa in sipoc.etapas %}
         <tr>
-          {% for cat, cls in [('supplier','sipoc-col-supplier'), ('input','sipoc-col-input'), ('process','sipoc-col-process'), ('output','sipoc-col-output'), ('customer','sipoc-col-customer')] %}
-          <td class="{{ cls }}">
+          <td class="sipoc-col-supplier">
             <ul class="mb-0 ps-3">
-              {% for item in sipoc.itens_por_categoria(cat) %}
-                <li>{{ item.texto }}</li>
-              {% else %}
-                <li class="text-muted">—</li>
-              {% endfor %}
+              {% for item in etapa.itens_por_categoria('supplier') %}<li>{{ item.texto }}</li>{% else %}<li class="text-muted">—</li>{% endfor %}
             </ul>
           </td>
-          {% endfor %}
+          <td class="sipoc-col-input">
+            <ul class="mb-0 ps-3">
+              {% for item in etapa.itens_por_categoria('input') %}<li>{{ item.texto }}</li>{% else %}<li class="text-muted">—</li>{% endfor %}
+            </ul>
+          </td>
+          <td class="sipoc-col-process text-center fw-semibold">
+            <span class="badge badge-navy">{{ loop.index }}</span> {{ etapa.nome }}
+          </td>
+          <td class="sipoc-col-output">
+            <ul class="mb-0 ps-3">
+              {% for item in etapa.itens_por_categoria('output') %}<li>{{ item.texto }}</li>{% else %}<li class="text-muted">—</li>{% endfor %}
+            </ul>
+          </td>
+          <td class="sipoc-col-customer">
+            <ul class="mb-0 ps-3">
+              {% for item in etapa.itens_por_categoria('customer') %}<li>{{ item.texto }}</li>{% else %}<li class="text-muted">—</li>{% endfor %}
+            </ul>
+          </td>
         </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center text-muted py-4">Nenhuma etapa cadastrada.</td></tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
 
-  {% set etapas = sipoc.itens_por_categoria('process') %}
-  {% if etapas %}
+  {% if sipoc.etapas %}
   <div class="mb-4">
     <div class="text-uppercase small text-muted fw-semibold mb-2">Fluxo do processo</div>
     <div class="d-flex flex-wrap align-items-center gap-2">
-      {% for etapa in etapas %}
-        <span class="badge bg-light text-dark border px-3 py-2">{{ loop.index }}. {{ etapa.texto }}</span>
+      {% for etapa in sipoc.etapas %}
+        <span class="badge bg-light text-dark border px-3 py-2">{{ loop.index }}. {{ etapa.nome }}</span>
         {% if not loop.last %}<i class="bi bi-arrow-right text-muted"></i>{% endif %}
       {% endfor %}
     </div>

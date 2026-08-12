@@ -1,7 +1,19 @@
 {% extends "base.html" %}
 {% block title %}{{ 'Editar' if sipoc else 'Novo' }} SIPOC — SIPOC Manager{% endblock %}
+{% block extra_head %}
+<style>
+  .etapa-card .card-header { background-color: #eef2f7; }
+  .categoria-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .3px; padding: .25rem .4rem; border-radius: 4px; }
+  .cat-supplier { background-color: #eef3f8; }
+  .cat-input { background-color: #eaf3ee; }
+  .cat-output { background-color: #eaf3ee; }
+  .cat-customer { background-color: #eef3f8; }
+  .etapa-empty-hint { border: 1px dashed #c7d0dc; border-radius: 10px; padding: 2rem; text-align: center; color: #7d8794; }
+</style>
+{% endblock %}
 {% block content %}
-<h2 class="mb-4">{{ 'Editar SIPOC' if sipoc else 'Novo SIPOC' }}</h2>
+<h2 class="mb-1">{{ 'Editar SIPOC' if sipoc else 'Novo SIPOC' }}</h2>
+<p class="text-muted">Cada etapa do processo tem seus próprios fornecedores, entradas, saídas e clientes — assim fica claro o que pertence a cada etapa.</p>
 
 <form method="POST" id="sipocForm">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -11,7 +23,7 @@
       <div class="col-md-6">
         <label class="form-label">Nome do processo *</label>
         <input type="text" name="nome_processo" class="form-control" required
-               placeholder='Ex.: "Produzir Bolo Industrializado"'
+               placeholder='Ex.: "Mapeamento Gestão Financeira"'
                value="{{ sipoc.nome_processo if sipoc else '' }}">
       </div>
       <div class="col-md-3">
@@ -39,36 +51,15 @@
     </div>
   </div>
 
-  <div class="row g-3">
-    {% set cols = [
-      ('supplier', 'Suppliers (Fornecedores)', 'sipoc-col-supplier'),
-      ('input', 'Inputs (Entradas)', 'sipoc-col-input'),
-      ('process', 'Process (Processo)', 'sipoc-col-process'),
-      ('output', 'Outputs (Saídas)', 'sipoc-col-output'),
-      ('customer', 'Customers (Clientes)', 'sipoc-col-customer'),
-    ] %}
-    {% for cat, label, cls in cols %}
-    <div class="col-md-4 col-lg">
-      <div class="card h-100">
-        <div class="card-header {{ cls }} fw-semibold">{{ label }}</div>
-        <div class="card-body">
-          <div class="dynamic-row-group" data-categoria="{{ cat }}">
-            {% if sipoc %}
-              {% for item in sipoc.itens_por_categoria(cat) %}
-              <div class="input-group row-item">
-                <input type="text" name="{{ cat }}[]" class="form-control form-control-sm" value="{{ item.texto }}">
-                <button type="button" class="btn btn-outline-danger btn-sm remove-row"><i class="bi bi-x"></i></button>
-              </div>
-              {% endfor %}
-            {% endif %}
-          </div>
-          <button type="button" class="btn btn-sm btn-outline-secondary add-row w-100 mt-1" data-categoria="{{ cat }}">
-            <i class="bi bi-plus"></i> Adicionar
-          </button>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 class="mb-0">Etapas do processo</h5>
+    <button type="button" id="addEtapaBtn" class="btn btn-sm btn-navy"><i class="bi bi-plus-lg"></i> Adicionar etapa</button>
+  </div>
+
+  <div id="etapasContainer"></div>
+
+  <div id="etapasEmptyHint" class="etapa-empty-hint mb-4" style="display: none;">
+    Nenhuma etapa adicionada ainda. Clique em "Adicionar etapa" para começar — cada etapa pode ter seus próprios fornecedores, entradas, saídas e clientes.
   </div>
 
   <div class="mt-4">
@@ -76,17 +67,126 @@
     <a href="{{ url_for('sipoc.listar') }}" class="btn btn-link">Cancelar</a>
   </div>
 </form>
-
-<template id="rowTemplate">
-  <div class="input-group row-item">
-    <input type="text" name="__CAT__[]" class="form-control form-control-sm">
-    <button type="button" class="btn btn-outline-danger btn-sm remove-row"><i class="bi bi-x"></i></button>
-  </div>
-</template>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
+  const CATEGORIAS = [
+    { cat: 'supplier', label: 'Fornecedores', cls: 'cat-supplier', placeholder: 'Ex.: Setor Fiscal' },
+    { cat: 'input', label: 'Entradas', cls: 'cat-input', placeholder: 'Ex.: Lançamentos fiscais' },
+    { cat: 'output', label: 'Saídas', cls: 'cat-output', placeholder: 'Ex.: Pagamento realizado' },
+    { cat: 'customer', label: 'Clientes', cls: 'cat-customer', placeholder: 'Ex.: Setor Financeiro' },
+  ];
+
+  let etapaCounter = 0;
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  function itemRowHTML(categoria, key, valor) {
+    return `
+      <div class="input-group input-group-sm row-item mb-1">
+        <input type="text" name="etapa_item__${key}__${categoria}[]" class="form-control" value="${escapeHtml(valor)}">
+        <button type="button" class="btn btn-outline-danger remove-row" title="Remover"><i class="bi bi-x"></i></button>
+      </div>`;
+  }
+
+  function categoriaColHTML(categoria, label, cls, key, valores) {
+    const lista = valores || [];
+    const rows = lista.map(v => itemRowHTML(categoria, key, v)).join('');
+    return `
+      <div class="col-md-3">
+        <div class="categoria-label ${cls} mb-1">${label}</div>
+        <div class="dynamic-row-group" data-categoria="${categoria}" data-etapa-key="${key}">${rows}</div>
+        <button type="button" class="btn btn-sm btn-outline-secondary add-item w-100 mt-1" data-categoria="${categoria}" data-etapa-key="${key}">
+          <i class="bi bi-plus"></i> Adicionar
+        </button>
+      </div>`;
+  }
+
+  function etapaBlockHTML(key, nome, itensPorCategoria) {
+    itensPorCategoria = itensPorCategoria || {};
+    const cols = CATEGORIAS.map(c => categoriaColHTML(c.cat, c.label, c.cls, key, itensPorCategoria[c.cat] || [])).join('');
+    return `
+      <div class="card etapa-card mb-3" data-etapa-key="${key}">
+        <div class="card-header d-flex align-items-center gap-2">
+          <span class="text-muted small">Etapa</span>
+          <input type="text" name="etapa_nome[]" class="form-control form-control-sm" style="max-width: 360px;"
+                 placeholder="Nome da etapa (ex.: Contas a Pagar)" value="${escapeHtml(nome)}" required>
+          <input type="hidden" name="etapa_key[]" value="${key}">
+          <button type="button" class="btn btn-sm btn-outline-danger ms-auto remove-etapa" title="Remover etapa">
+            <i class="bi bi-trash"></i> Remover etapa
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">${cols}</div>
+        </div>
+      </div>`;
+  }
+
+  function updateEmptyHint() {
+    const container = document.getElementById('etapasContainer');
+    document.getElementById('etapasEmptyHint').style.display = container.children.length ? 'none' : 'block';
+  }
+
+  function addEtapa(nome, itensPorCategoria) {
+    etapaCounter += 1;
+    const key = `nova-${etapaCounter}`;
+    document.getElementById('etapasContainer').insertAdjacentHTML('beforeend', etapaBlockHTML(key, nome || '', itensPorCategoria));
+    updateEmptyHint();
+  }
+
+  document.getElementById('addEtapaBtn').addEventListener('click', () => addEtapa('', {}));
+
+  // Dados existentes (edição)
+  {% if sipoc %}
+  const dadosEtapas = [
+    {% for etapa in sipoc.etapas %}
+    {
+      nome: {{ etapa.nome | tojson }},
+      itens: {
+        supplier: {{ etapa.itens_por_categoria('supplier') | map(attribute='texto') | list | tojson }},
+        input: {{ etapa.itens_por_categoria('input') | map(attribute='texto') | list | tojson }},
+        output: {{ etapa.itens_por_categoria('output') | map(attribute='texto') | list | tojson }},
+        customer: {{ etapa.itens_por_categoria('customer') | map(attribute='texto') | list | tojson }},
+      }
+    },
+    {% endfor %}
+  ];
+  dadosEtapas.forEach(e => addEtapa(e.nome, e.itens));
+  {% else %}
+  addEtapa('', {});
+  {% endif %}
+
+  // Delegação de eventos: adicionar/remover linhas de item e remover etapa
+  document.addEventListener('click', (e) => {
+    const addBtn = e.target.closest('.add-item');
+    if (addBtn) {
+      const categoria = addBtn.dataset.categoria;
+      const key = addBtn.dataset.etapaKey;
+      const group = document.querySelector(`.dynamic-row-group[data-categoria="${categoria}"][data-etapa-key="${key}"]`);
+      group.insertAdjacentHTML('beforeend', itemRowHTML(categoria, key, ''));
+      return;
+    }
+    const removeRowBtn = e.target.closest('.remove-row');
+    if (removeRowBtn) {
+      removeRowBtn.closest('.row-item').remove();
+      return;
+    }
+    const removeEtapaBtn = e.target.closest('.remove-etapa');
+    if (removeEtapaBtn) {
+      if (document.querySelectorAll('.etapa-card').length <= 1 || confirm('Remover esta etapa e todos os itens associados a ela?')) {
+        removeEtapaBtn.closest('.etapa-card').remove();
+        updateEmptyHint();
+      }
+      return;
+    }
+  });
+
+  // Empresa -> áreas
   const empresaSelect = document.getElementById('empresaSelect');
   const areaSelect = document.getElementById('areaSelect');
   const areaPreSelected = {{ (sipoc.area_id if sipoc and sipoc.area_id else '') | tojson }};
@@ -110,19 +210,11 @@
   }
   empresaSelect.addEventListener('change', () => carregarAreas(empresaSelect.value, null));
 
-  document.querySelectorAll('.add-row').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const cat = btn.dataset.categoria;
-      const group = document.querySelector(`.dynamic-row-group[data-categoria="${cat}"]`);
-      const tpl = document.getElementById('rowTemplate').content.cloneNode(true);
-      tpl.querySelector('input').name = `${cat}[]`;
-      group.appendChild(tpl);
-    });
-  });
-
-  document.addEventListener('click', (e) => {
-    if (e.target.closest('.remove-row')) {
-      e.target.closest('.row-item').remove();
+  // Validação simples antes de enviar: ao menos uma etapa
+  document.getElementById('sipocForm').addEventListener('submit', (e) => {
+    if (document.querySelectorAll('.etapa-card').length === 0) {
+      e.preventDefault();
+      alert('Adicione ao menos uma etapa do processo antes de salvar.');
     }
   });
 </script>

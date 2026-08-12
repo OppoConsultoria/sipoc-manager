@@ -76,6 +76,12 @@ body {
 .sipoc-col-output { background-color: #eaf3ee; }
 .sipoc-col-customer { background-color: #eef3f8; }
 
+.sipoc-table tbody tr:nth-child(even) .sipoc-col-supplier,
+.sipoc-table tbody tr:nth-child(even) .sipoc-col-customer { background-color: #e2eaf3; }
+.sipoc-table tbody tr:nth-child(even) .sipoc-col-input,
+.sipoc-table tbody tr:nth-child(even) .sipoc-col-output { background-color: #deece5; }
+.sipoc-table tbody tr:nth-child(even) .sipoc-col-process { background-color: #fbecd3; }
+
 .badge-navy {
   background-color: var(--navy);
   color: #fff;

@@ -1,15 +1,35 @@
 :root {
-  --navy: #1f4e78;
-  --navy-dark: #163a58;
-  --gold: #d9a441;
-  --bg: #f4f6f9;
-  --card-border: #e3e7ee;
+  /* Identidade visual OPPO Consultoria */
+  --oppo-black: #101112;
+  --oppo-black-soft: #1c1e20;
+  --oppo-green: #4fbd8b;
+  --oppo-green-dark: #379268;
+  --oppo-green-light: #e7f6ee;
+  --oppo-bg: #f5f5f3;
+  --card-border: #e6e6e3;
+
+  /* Aliases mantidos por compatibilidade com o restante do template */
+  --navy: var(--oppo-black);
+  --navy-dark: var(--oppo-black-soft);
 }
 
 body {
-  background-color: var(--bg);
-  font-family: "Segoe UI", Arial, sans-serif;
-  color: #24303d;
+  background-color: var(--oppo-bg);
+  font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+  color: var(--oppo-black);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+  font-weight: 700;
+  color: var(--oppo-black);
+}
+
+a {
+  color: var(--oppo-green-dark);
+}
+a:hover {
+  color: var(--oppo-black);
 }
 
 .navbar-brand {
@@ -18,16 +38,21 @@ body {
 }
 
 .navbar-sipoc {
-  background: linear-gradient(90deg, var(--navy) 0%, var(--navy-dark) 100%);
+  background: var(--oppo-black);
 }
 
 .navbar-sipoc .nav-link {
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: rgba(255, 255, 255, 0.75) !important;
 }
 
 .navbar-sipoc .nav-link.active,
 .navbar-sipoc .nav-link:hover {
-  color: #fff !important;
+  color: var(--oppo-green) !important;
+}
+
+.oppo-mark {
+  display: inline-flex;
+  vertical-align: middle;
 }
 
 .card {
@@ -41,12 +66,24 @@ body {
   background: #fff;
   padding: 1.25rem 1.5rem;
   height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--oppo-green);
 }
 
 .kpi-value {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--navy);
+  color: var(--oppo-black);
 }
 
 .kpi-label {
@@ -57,7 +94,7 @@ body {
 }
 
 .sipoc-table th {
-  background-color: var(--navy);
+  background-color: var(--oppo-black);
   color: #fff;
   text-align: center;
   vertical-align: middle;
@@ -70,33 +107,43 @@ body {
   font-size: 0.9rem;
 }
 
-.sipoc-col-supplier { background-color: #eef3f8; }
-.sipoc-col-input { background-color: #eaf3ee; }
-.sipoc-col-process { background-color: #fdf3e3; }
-.sipoc-col-output { background-color: #eaf3ee; }
-.sipoc-col-customer { background-color: #eef3f8; }
+.sipoc-col-supplier { background-color: #eef6f2; }
+.sipoc-col-input { background-color: #e7f6ee; }
+.sipoc-col-process { background-color: #eafaf1; }
+.sipoc-col-output { background-color: #e7f6ee; }
+.sipoc-col-customer { background-color: #eef6f2; }
 
 .sipoc-table tbody tr:nth-child(even) .sipoc-col-supplier,
-.sipoc-table tbody tr:nth-child(even) .sipoc-col-customer { background-color: #e2eaf3; }
+.sipoc-table tbody tr:nth-child(even) .sipoc-col-customer { background-color: #e0efe7; }
 .sipoc-table tbody tr:nth-child(even) .sipoc-col-input,
-.sipoc-table tbody tr:nth-child(even) .sipoc-col-output { background-color: #deece5; }
-.sipoc-table tbody tr:nth-child(even) .sipoc-col-process { background-color: #fbecd3; }
+.sipoc-table tbody tr:nth-child(even) .sipoc-col-output { background-color: #d9f0e4; }
+.sipoc-table tbody tr:nth-child(even) .sipoc-col-process { background-color: #d3f2e3; }
 
 .badge-navy {
-  background-color: var(--navy);
-  color: #fff;
+  background-color: var(--oppo-black);
+  color: var(--oppo-green);
+  font-weight: 600;
 }
 
 .btn-navy {
-  background-color: var(--navy);
-  border-color: var(--navy);
+  background-color: var(--oppo-black);
+  border-color: var(--oppo-black);
   color: #fff;
 }
 
 .btn-navy:hover {
-  background-color: var(--navy-dark);
-  border-color: var(--navy-dark);
+  background-color: var(--oppo-green-dark);
+  border-color: var(--oppo-green-dark);
   color: #fff;
+}
+
+.btn-outline-secondary {
+  color: var(--oppo-black);
+  border-color: #c9cdd2;
+}
+.btn-outline-secondary:hover {
+  background-color: var(--oppo-black);
+  border-color: var(--oppo-black);
 }
 
 .dynamic-row-group .row-item {
@@ -108,18 +155,46 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
+  background: var(--oppo-black);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-wrapper::before {
+  content: "";
+  position: absolute;
+  top: -120px;
+  right: -120px;
+  width: 340px;
+  height: 340px;
+  background: var(--oppo-green);
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  opacity: 0.9;
+}
+
+.auth-wrapper::after {
+  content: "";
+  position: absolute;
+  bottom: -140px;
+  left: -140px;
+  width: 320px;
+  height: 320px;
+  background: var(--oppo-green-dark);
+  clip-path: polygon(0 100%, 0 0, 100% 100%);
+  opacity: 0.55;
 }
 
 .auth-card {
   max-width: 420px;
   width: 100%;
   border-radius: 14px;
+  position: relative;
+  z-index: 1;
 }
 
 /* --- Relatório --- */
 .relatorio-header {
-  border-bottom: 3px solid var(--navy);
+  border-bottom: 3px solid var(--oppo-green);
   padding-bottom: 1rem;
   margin-bottom: 1.5rem;
 }

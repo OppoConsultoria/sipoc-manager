@@ -51,8 +51,8 @@ a:hover {
 }
 
 .oppo-mark {
-  display: inline-flex;
   vertical-align: middle;
+  object-fit: contain;
 }
 
 .card {

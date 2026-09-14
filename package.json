@@ -1,0 +1,24 @@
+{
+  "name": "sipoc-manager",
+  "version": "1.0.0",
+  "description": "SIPOC process mapping application",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "echo 'Build complete'",
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "firebase-admin": "^12.0.0",
+    "firebase": "^10.0.0",
+    "dotenv": "^16.0.3"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
